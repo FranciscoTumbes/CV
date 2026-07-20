@@ -1109,6 +1109,24 @@ body.panel-open{overflow:hidden;}
       </div>
     </div>
 
+    <!-- CSV -->
+    <div class="p-group">
+      <div class="p-group-header" onclick="toggleGroup(this)">
+        <span class="p-group-title">Exportar / Importar CSV</span>
+        <span class="p-group-toggle">▾</span>
+      </div>
+      <div class="p-group-body">
+        <div class="p-field"><label class="p-label">Sección</label>
+          <select class="p-select" id="csv-section-select">
+            <option value="exp">Experiencias</option>
+            <option value="edu">Educación</option>
+          </select>
+        </div>
+        <button class="btn-add" onclick="downloadCSV(document.getElementById('csv-section-select').value)">⬇ Exportar CSV</button>
+        <button class="btn-add" onclick="document.getElementById('csv-file-input').click()">⬆ Importar CSV</button>
+      </div>
+    </div>
+
     <!-- HABILIDADES -->
     <div class="p-group">
       <div class="p-group-header" onclick="toggleGroup(this)">
@@ -1157,6 +1175,7 @@ body.panel-open{overflow:hidden;}
   <div class="panel-footer">
     <button class="btn-download-panel" id="btn-dl" onclick="downloadPDF()">⬇ Descargar PDF</button>
   </div>
+  <input type="file" id="csv-file-input" accept=".csv,text/csv" style="display:none" onchange="handleCSVUpload(event)">
 </div><!-- end panel -->
 
 <!-- ═══════════ CV ÁREA ═══════════ -->
@@ -1504,6 +1523,149 @@ function addEdu() {
 function deleteEdu(i) {
   educations.splice(i,1);
   render();
+}
+
+function csvEscape(value) {
+  return '"' + String(value || '').replace(/"/g, '""') + '"';
+}
+
+function downloadCSV(type) {
+  const rows = type === 'edu' ? educations : experiences;
+  if (!rows.length) {
+    alert('No hay datos para exportar en esta sección.');
+    return;
+  }
+  const headers = type === 'edu'
+    ? ['degree', 'institution', 'year', 'detail', 'icon']
+    : ['role', 'org', 'period', 'desc', 'tags'];
+  const csvLines = [headers.join(',')];
+  rows.forEach(item => {
+    if (type === 'edu') {
+      csvLines.push([
+        csvEscape(item.degree),
+        csvEscape(item.institution),
+        csvEscape(item.year),
+        csvEscape(item.detail),
+        csvEscape(item.icon)
+      ].join(','));
+    } else {
+      csvLines.push([
+        csvEscape(item.role),
+        csvEscape(item.org),
+        csvEscape(item.period),
+        csvEscape(item.desc),
+        csvEscape((item.tags || []).join('; '))
+      ].join(','));
+    }
+  });
+  const blob = new Blob([csvLines.join('\r\n')], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `cv_${type}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+function parseCSV(text) {
+  const lines = text.trim().split(/\r?\n/).filter(line => line.trim());
+  if (!lines.length) return [];
+
+  const parseLine = (line) => {
+    const values = [];
+    let current = '';
+    let inQuotes = false;
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      if (inQuotes) {
+        if (char === '"') {
+          if (line[i + 1] === '"') {
+            current += '"';
+            i++;
+          } else {
+            inQuotes = false;
+          }
+        } else {
+          current += char;
+        }
+      } else if (char === '"') {
+        inQuotes = true;
+      } else if (char === ',') {
+        values.push(current);
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+    values.push(current);
+    return values;
+  };
+
+  const headerNames = parseLine(lines.shift()).map(h => h.trim().toLowerCase());
+  return lines.map(line => {
+    const values = parseLine(line);
+    const row = {};
+    headerNames.forEach((header, index) => {
+      row[header] = values[index] !== undefined ? values[index].trim() : '';
+    });
+    return row;
+  });
+}
+
+function importCSV(type, rows) {
+  const isEdu = type === 'edu';
+  let imported = 0;
+
+  rows.forEach(row => {
+    if (isEdu) {
+      const degree = row.degree || row.title || '';
+      const institution = row.institution || row.org || '';
+      if (!degree) return;
+      educations.unshift({
+        degree,
+        institution,
+        year: row.year || '',
+        detail: row.detail || row.description || '',
+        icon: (row.icon || 'EDU').toUpperCase()
+      });
+      imported++;
+    } else {
+      const role = row.role || row.title || row.position || '';
+      const org = row.org || row.institution || row.company || '';
+      if (!role) return;
+      const tagsText = row.tags || row.tag || row.tagslist || '';
+      experiences.unshift({
+        role,
+        org,
+        period: row.period || row.date || '',
+        desc: row.desc || row.description || '',
+        tags: tagsText.split(/;|,/).map(tag => tag.trim()).filter(Boolean)
+      });
+      imported++;
+    }
+  });
+
+  if (imported) {
+    alert(`Se importaron ${imported} fila${imported === 1 ? '' : 's'} en ${isEdu ? 'Educación' : 'Experiencias'}.`);
+  } else {
+    alert('No se encontraron filas válidas para importar. Revisa el archivo CSV.');
+  }
+}
+
+function handleCSVUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const type = document.getElementById('csv-section-select').value;
+  const reader = new FileReader();
+  reader.onload = () => {
+    const rows = parseCSV(reader.result);
+    importCSV(type, rows);
+    render();
+    event.target.value = '';
+  };
+  reader.readAsText(file, 'UTF-8');
 }
 
 // ════════════════════════════════
