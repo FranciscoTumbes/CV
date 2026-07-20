@@ -202,6 +202,18 @@ body.panel-open{overflow:hidden;}
   opacity:0.6;
 }
 .item-delete:hover{opacity:1;}
+.item-edit{
+  position:absolute;
+  top:6px; right:26px;
+  background:none;
+  border:none;
+  color:var(--panel-accent);
+  cursor:pointer;
+  font-size:13px;
+  line-height:1;
+  opacity:0.6;
+}
+.item-edit:hover{opacity:1;}
 
 /* ADD FORM */
 .add-form{
@@ -1109,6 +1121,81 @@ body.panel-open{overflow:hidden;}
       </div>
     </div>
 
+    <!-- CURSOS -->
+    <div class="p-group">
+      <div class="p-group-header" onclick="toggleGroup(this)">
+        <span class="p-group-title">Cursos y Seminarios</span>
+        <span class="p-group-toggle">▾</span>
+      </div>
+      <div class="p-group-body">
+        <div id="course-list" class="item-list"></div>
+        <div id="course-add-form" class="add-form-wrapper">
+          <div class="add-form">
+            <div class="add-form-title">Nuevo Curso / Seminario</div>
+            <div class="p-field"><label class="p-label">Nombre del Curso</label>
+              <input class="p-input" id="new-course-name" placeholder="ej. Curso de Gestión Pública"></div>
+            <div class="p-field"><label class="p-label">Organizador</label>
+              <input class="p-input" id="new-course-org" placeholder="ej. Ministerio de Economía"></div>
+            <div class="p-field"><label class="p-label">Año / Fecha</label>
+              <input class="p-input" id="new-course-date" placeholder="ej. 2018 o Nov. 2017"></div>
+            <div class="p-field"><label class="p-label">Área / Etiqueta</label>
+              <input class="p-input" id="new-course-area" placeholder="ej. Contabilidad"></div>
+            <button class="btn-confirm" onclick="addCourse()">✓ Agregar</button>
+            <button class="btn-cancel-add" onclick="toggleAddForm('course')">Cancelar</button>
+          </div>
+        </div>
+        <button class="btn-add" onclick="toggleAddForm('course')">+ Agregar Curso</button>
+      </div>
+    </div>
+
+    <!-- RECONOCIMIENTOS -->
+    <div class="p-group">
+      <div class="p-group-header" onclick="toggleGroup(this)">
+        <span class="p-group-title">Reconocimientos</span>
+        <span class="p-group-toggle">▾</span>
+      </div>
+      <div class="p-group-body">
+        <div id="recog-list" class="item-list"></div>
+        <div id="recog-add-form" class="add-form-wrapper">
+          <div class="add-form">
+            <div class="add-form-title">Nuevo Reconocimiento</div>
+            <div class="p-field"><label class="p-label">Título / Detalle</label>
+              <input class="p-input" id="new-recog-title" placeholder="ej. Observador Técnico"></div>
+            <div class="p-field"><label class="p-label">Organización</label>
+              <input class="p-input" id="new-recog-org" placeholder="ej. Transparencia"></div>
+            <div class="p-field"><label class="p-label">Fecha / Período</label>
+              <input class="p-input" id="new-recog-date" placeholder="ej. Jul. 2005"></div>
+            <button class="btn-confirm" onclick="addRecog()">✓ Agregar</button>
+            <button class="btn-cancel-add" onclick="toggleAddForm('recog')">Cancelar</button>
+          </div>
+        </div>
+        <button class="btn-add" onclick="toggleAddForm('recog')">+ Agregar Reconocimiento</button>
+      </div>
+    </div>
+
+    <!-- REFERENCIAS -->
+    <div class="p-group">
+      <div class="p-group-header" onclick="toggleGroup(this)">
+        <span class="p-group-title">Referencias</span>
+        <span class="p-group-toggle">▾</span>
+      </div>
+      <div class="p-group-body">
+        <div id="ref-list" class="item-list"></div>
+        <div id="ref-add-form" class="add-form-wrapper">
+          <div class="add-form">
+            <div class="add-form-title">Nueva Referencia</div>
+            <div class="p-field"><label class="p-label">Nombre Completo</label>
+              <input class="p-input" id="new-ref-name" placeholder="ej. C.P.C. Oscar Vilela Rodríguez"></div>
+            <div class="p-field"><label class="p-label">Cargo / Descripción</label>
+              <textarea class="p-textarea" id="new-ref-role" placeholder="ej. Ex Decano del Colegio..."></textarea></div>
+            <button class="btn-confirm" onclick="addRef()">✓ Agregar</button>
+            <button class="btn-cancel-add" onclick="toggleAddForm('ref')">Cancelar</button>
+          </div>
+        </div>
+        <button class="btn-add" onclick="toggleAddForm('ref')">+ Agregar Referencia</button>
+      </div>
+    </div>
+
     <!-- CSV -->
     <div class="p-group">
       <div class="p-group-header" onclick="toggleGroup(this)">
@@ -1120,6 +1207,9 @@ body.panel-open{overflow:hidden;}
           <select class="p-select" id="csv-section-select">
             <option value="exp">Experiencias</option>
             <option value="edu">Educación</option>
+            <option value="course">Cursos y Seminarios</option>
+            <option value="recog">Reconocimientos</option>
+            <option value="ref">Referencias</option>
           </select>
         </div>
         <button class="btn-add" onclick="downloadCSV(document.getElementById('csv-section-select').value)">⬇ Exportar CSV</button>
@@ -1174,6 +1264,7 @@ body.panel-open{overflow:hidden;}
 
   <div class="panel-footer">
     <button class="btn-download-panel" id="btn-dl" onclick="downloadPDF()">⬇ Descargar PDF</button>
+    <button class="btn-download-panel" id="btn-reset" onclick="resetFactoryData()" style="background:#e05555;margin-top:6px;">↺ Restaurar Datos</button>
   </div>
   <input type="file" id="csv-file-input" accept=".csv,text/csv" style="display:none" onchange="handleCSVUpload(event)">
 </div><!-- end panel -->
@@ -1370,86 +1461,174 @@ body.panel-open{overflow:hidden;}
 // ════════════════════════════════
 //  DATA
 // ════════════════════════════════
-let experiences = [
-  {role:'Gerente de Planificación, Presupuesto y OPMI',org:'Municipalidad Distrital de Pampas de Hospital',period:'Jun. 2023 — Presente',desc:'Dirección de la oficina de planificación estratégica institucional. Gestión del presupuesto participativo y encargado de la Oficina de Programación Multianual de Inversiones (OPMI). Coordinación de la formulación y evaluación de proyectos de inversión pública.',tags:['Planificación','Presupuesto','OPMI','SNIP']},
-  {role:'Sub Gerente de Logística',org:'Municipalidad Provincial de Tumbes',period:'Ene. 2023 — Abr. 2024',desc:'Gestión integral de contrataciones de bienes y servicios bajo la normativa OSCE. Supervisión de los procesos de selección según la Ley de Contrataciones del Estado. Coordinación con las áreas usuarias para la programación del Plan Anual de Contrataciones.',tags:['OSCE','SEACE','Logística','Contrataciones']},
-  {role:'Jefe de Logística — Contrataciones',org:'Municipalidad Distrital de Máncora',period:'Sep. 2019 — Dic. 2022',desc:'Actividades de contrataciones de bienes y servicios. Supervisión de procesos de selección según Ley de Contrataciones del Estado. Gestión del PAC y expedientes de contratación.',tags:['Logística','Contrataciones','OSCE']},
-  {role:'Logística — Contrataciones',org:'Hospital JAMO II — Tumbes',period:'Mar. 2019 — May. 2020',desc:'Gestión de adquisiciones y contrataciones de bienes y servicios en el sector salud público.',tags:['Sector Salud','Logística','Adquisiciones']},
-  {role:'Logística — Contrataciones',org:'Municipalidad Distrital de Lobitos',period:'Jun. 2019 — Sep. 2020',desc:'Contrataciones de bienes y servicios en gobierno local.',tags:['Gobierno Local','Logística']},
-  {role:'Gerente Municipal',org:'Municipalidad Distrital de Pampas de Hospital',period:'Ene. 2017 — Dic. 2018',desc:'Dirección y control general de la municipalidad. Coordinación de todas las áreas administrativas, operativas y de gestión. Responsable de la ejecución del Plan de Desarrollo Concertado y el Presupuesto Institucional.',tags:['Gerencia','Administración','Gestión Pública']},
-  {role:'Jefe de Presupuesto',org:'Municipalidad Distrital de Pampas de Hospital',period:'Ene. 2015 — Dic. 2016',desc:'Elaboración, formulación y seguimiento del Presupuesto Institucional de Apertura (PIA) y Presupuesto Institucional Modificado (PIM). Operación del sistema SIAF para registro de operaciones contables y presupuestales.',tags:['SIAF','PIA','PIM','Presupuesto']},
-  {role:'Contador General',org:'Municipalidad Distrital de Pampas de Hospital',period:'Ene. 2013 — Dic. 2014',desc:'Elaboración de estados financieros y presupuestarios. Cierre contable anual. Coordinación con la Dirección General de Contabilidad Pública del MEF.',tags:['Contabilidad','Estados Financieros','MEF']},
-  {role:'Administrador Municipal',org:'Municipalidad Distrital de Pampas de Hospital',period:'Ene. 2007 — Dic. 2012',desc:'Organización, dirección y planeamiento institucional. Gestión de recursos humanos, logística y presupuesto. Implementación de sistemas administrativos de acuerdo a la normativa vigente.',tags:['Administración','RRHH','Logística','Planeamiento']},
-  {role:'Capacitador — Programa MI CHAMBA',org:'SWISSCONTACT – FONCODES',period:'Feb. 2006 — Jul. 2006',desc:'Capacitación en emprendimiento, gestión empresarial y desarrollo económico local a beneficiarios del programa.',tags:['Capacitación','Emprendimiento','DEL']},
-  {role:'Docente de Computación',org:'Instituto CPI',period:'Ene. 1998 — 2007',desc:'Docencia en programas de cómputo: Visual FoxPro, AutoCAD, Corel Draw, Microsoft Word y Excel. Diseño curricular de cursos y evaluación de alumnos.',tags:['Docencia','Computación','AutoCAD','Excel']},
-  {role:'Docente Experto DED — Contabilidad Computarizada',org:'Centro de Educación Rural CER — Cooperación Técnica Alemana (DED)',period:'Jul. 1992 — Nov. 1996',desc:'Miembro registrado de la DED (Deutscher Entwicklungsdienst). Cooperante de la organización alemana de cooperación técnica internacional. Implementación de sistemas de contabilidad computarizada en instituciones rurales.',tags:['Cooperación Internacional','DED','Contabilidad']},
-  {role:'Contraparte Técnica — Proyecto CECAT/Alemania',org:'Proyecto Agrario CECAT — Cooperación Alemana',period:'Ago. 1991 — Jul. 1992',desc:'Asistente del Ing. Hartmut Müller Heinze en la implementación del sistema de contabilidad computarizada para la Central de Cooperativas Agrarias de Tumbes. Desarrollo del sistema contable y actividades de comercialización de plátano de exportación.',tags:['CECAT','Sistema Contable','Cooperativas']}
-];
+const DEFAULT_DATA = {
+  nombre: "Francisco Sanjinez Calderón",
+  titulo: "Contador Público · Especialista en Gestión Pública",
+  perfil: "Especialista en Gestión Pública y Gobernabilidad con más de 30 años de trayectoria en administración municipal, contabilidad gubernamental, logística y planificación estratégica. Profundo conocimiento de los sistemas administrativos del Estado peruano (SIAF, SIGA, OSCE), presupuesto por resultados y contrataciones públicas. Capacidad comprobada de liderazgo en gerencias municipales, con formación doctoral y amplia experiencia en cooperación técnica internacional.",
+  dir: "Jr. Bolognesi Nº 211 — Tumbes, Perú",
+  tel: "+51 968 197 821",
+  email: "panchogrupo@hotmail.com",
+  nac: "18 de Enero de 1966",
+  nac2: "Peruana",
+  cole: "15-406",
+  osce: "S0081118",
+  dni: "00219246-8",
+  ec: "Casado",
+  web: "www.cpigestor.com",
+  sk1: "SIAF, SIGA, OSCE, SEACE, SNIP, MEF",
+  sk2: "Contabilidad Gubernamental, Auditoría, Tributación, Finanzas, Estados Financieros",
+  sk3: "Logística, Presupuesto Participativo, Planificación Estratégica, OPMI, Contrataciones del Estado",
+  sk4: "PHP, AutoCAD, Corel Draw, Excel Avanzado, Visual FoxPro",
+  lang1: "Español", lang1p: 100,
+  lang2: "Inglés", lang2p: 30,
+  lang3: "Alemán", lang3p: 20,
+  experiences: [
+    {role:'Gerente de Planificación, Presupuesto y OPMI',org:'Municipalidad Distrital de Pampas de Hospital',period:'Jun. 2023 — Presente',desc:'Dirección de la oficina de planificación estratégica institucional. Gestión del presupuesto participativo y encargado de la Oficina de Programación Multianual de Inversiones (OPMI). Coordinación de la formulación y evaluación de proyectos de inversión pública.',tags:['Planificación','Presupuesto','OPMI','SNIP']},
+    {role:'Sub Gerente de Logística',org:'Municipalidad Provincial de Tumbes',period:'Ene. 2023 — Abr. 2024',desc:'Gestión integral de contrataciones de bienes y servicios bajo la normativa OSCE. Supervisión de los procesos de selección según la Ley de Contrataciones del Estado. Coordinación con las áreas usuarias para la programación del Plan Anual de Contrataciones.',tags:['OSCE','SEACE','Logística','Contrataciones']},
+    {role:'Jefe de Logística — Contrataciones',org:'Municipalidad Distrital de Máncora',period:'Sep. 2019 — Dic. 2022',desc:'Actividades de contrataciones de bienes y servicios. Supervisión de procesos de selección según Ley de Contrataciones del Estado. Gestión del PAC y expedientes de contratación.',tags:['Logística','Contrataciones','OSCE']},
+    {role:'Logística — Contrataciones',org:'Hospital JAMO II — Tumbes',period:'Mar. 2019 — May. 2020',desc:'Gestión de adquisiciones y contrataciones de bienes y servicios en el sector salud público.',tags:['Sector Salud','Logística','Adquisiciones']},
+    {role:'Logística — Contrataciones',org:'Municipalidad Distrital de Lobitos',period:'Jun. 2019 — Sep. 2020',desc:'Contrataciones de bienes y servicios en gobierno local.',tags:['Gobierno Local','Logística']},
+    {role:'Gerente Municipal',org:'Municipalidad Distrital de Pampas de Hospital',period:'Ene. 2017 — Dic. 2018',desc:'Dirección y control general de la municipalidad. Coordinación de todas las áreas administrativas, operativas y de gestión. Responsable de la ejecución del Plan de Desarrollo Concertado y el Presupuesto Institucional.',tags:['Gerencia','Administración','Gestión Pública']},
+    {role:'Jefe de Presupuesto',org:'Municipalidad Distrital de Pampas de Hospital',period:'Ene. 2015 — Dic. 2016',desc:'Elaboración, formulación y seguimiento del Presupuesto Institucional de Apertura (PIA) y Presupuesto Institucional Modificado (PIM). Operación del sistema SIAF para registro de operaciones contables y presupuestales.',tags:['SIAF','PIA','PIM','Presupuesto']},
+    {role:'Contador General',org:'Municipalidad Distrital de Pampas de Hospital',period:'Ene. 2013 — Dic. 2014',desc:'Elaboración de estados financieros y presupuestarios. Cierre contable anual. Coordinación con la Dirección General de Contabilidad Pública del MEF.',tags:['Contabilidad','Estados Financieros','MEF']},
+    {role:'Administrador Municipal',org:'Municipalidad Distrital de Pampas de Hospital',period:'Ene. 2007 — Dic. 2012',desc:'Organización, dirección y planeamiento institucional. Gestión de recursos humanos, logística y presupuesto. Implementación de sistemas administrativos de acuerdo a la normativa vigente.',tags:['Administración','RRHH','Logística','Planeamiento']},
+    {role:'Capacitador — Programa MI CHAMBA',org:'SWISSCONTACT – FONCODES',period:'Feb. 2006 — Jul. 2006',desc:'Capacitación en emprendimiento, gestión empresarial y desarrollo económico local a beneficiarios del programa.',tags:['Capacitación','Emprendimiento','DEL']},
+    {role:'Docente de Computación',org:'Instituto CPI',period:'Ene. 1998 — 2007',desc:'Docencia en programas de cómputo: Visual FoxPro, AutoCAD, Corel Draw, Microsoft Word y Excel. Diseño curricular de cursos y evaluación de alumnos.',tags:['Docencia','Computación','AutoCAD','Excel']},
+    {role:'Docente Experto DED — Contabilidad Computarizada',org:'Centro de Educación Rural CER — Cooperación Técnica Alemana (DED)',period:'Jul. 1992 — Nov. 1996',desc:'Miembro registrado de la DED (Deutscher Entwicklungsdienst). Cooperante de la organización alemana de cooperación técnica internacional. Implementación de sistemas de contabilidad computarizada en instituciones rurales.',tags:['Cooperación Internacional','DED','Contabilidad']},
+    {role:'Contraparte Técnica — Proyecto CECAT/Alemania',org:'Proyecto Agrario CECAT — Cooperación Alemana',period:'Ago. 1991 — Jul. 1992',desc:'Asistente del Ing. Hartmut Müller Heinze en la implementación del sistema de contabilidad computarizada para la Central de Cooperativas Agrarias de Tumbes. Desarrollo del sistema contable y actividades de comercialización de plátano de exportación.',tags:['CECAT','Sistema Contable','Cooperativas']}
+  ],
+  educations: [
+    {degree:'Doctorado en Gestión Pública y Gobernabilidad',institution:'Universidad César Vallejo',year:'Estudios concluidos',detail:'Investigación en políticas públicas, gobernabilidad democrática y gestión territorial. Formación en metodología de la investigación científica.',icon:'DR'},
+    {degree:'Maestría en Gestión Educativa',institution:'Universidad César Vallejo',year:'Estudios concluidos',detail:'Especialización en innovaciones pedagógicas, planeamiento estratégico educativo y metodología de la investigación.',icon:'MG'},
+    {degree:'Contador Público Colegiado',institution:'Universidad Nacional de Tumbes — Facultad de Ciencias Económicas',year:'Colegiatura N.° 15-406',detail:'Tesis: "Estandarización de las estructuras de las bases de datos de los sistemas contables computarizados de empresas comerciales". Calificación: Muy Buena.',icon:'CPC'},
+    {degree:'Bachiller en Ciencias Económicas',institution:'Universidad Nacional de Tumbes',year:'Mención en Contabilidad',detail:'Materias: Contabilidad, Finanzas, Computación, Estadística, Economía, Administración de Empresas, Tributación, Auditoría, Gestión Pública.',icon:'BC'},
+    {degree:'Educación Secundaria',institution:'Centro Educativo Inmaculada Concepción',year:'',detail:'',icon:'SEC'},
+    {degree:'Educación Primaria',institution:'Escuela Primaria "Tarcila de Jesús Granda Mora"',year:'',detail:'',icon:'PRI'}
+  ],
+  courses: [
+    {date:'2018',name:'Liquidación Física y Financiera de Proyectos de Inversión Pública',org:'E&G Asesores y Consultores EIRL',area:'Contabilidad'},
+    {date:'Nov. 2017',name:'Pronunciamiento y Normas para la Presentación de la Información Contable — Cierre 2017',org:'Ministerio de Economía y Finanzas',area:'Contabilidad'},
+    {date:'Mar. 2016',name:'Elaboración del Informe Multianual de Gestión Fiscal 2017-2019',org:'Ministerio de Economía',area:'Presupuesto'},
+    {date:'Jul. 2012',name:'Sistemas Administrativos en la Gestión Pública — Ámbito Piura-Tumbes',org:'Universidad Nacional de Piura',area:'Administración'},
+    {date:'Jul. 2011',name:'III Curso SIAF — Sistema Integrado de Administración Financiera: Herramienta de Gestión',org:'Colegio de Contadores Públicos de Tumbes',area:'Contabilidad'},
+    {date:'Abr. 2011',name:'Aplicación de la Normatividad Contable, Operatividad en la Tabla de Operaciones',org:'Ministerio de Economía',area:'Contabilidad'},
+    {date:'Dic. 2010',name:'Seminario de Especialización Técnica Legal para Afrontar con Éxito un Arbitraje',org:'PROJUSTICIA',area:'Contrataciones'},
+    {date:'Nov. 2010',name:'V Seminario Interinstitucional de los Sistemas Administrativos',org:'Gobierno Regional de Piura',area:'Administración'},
+    {date:'Sep. 2010',name:'Instrumentos para la Planificación y Gestión de la Inversión Pública',org:'Colegio de Ingenieros del Perú',area:'Presupuesto'},
+    {date:'Feb. 2010',name:'IV Seminario Interinstitucional de los Sistemas Administrativos: Ámbito Piura-Tumbes',org:'Gobierno Regional de Piura',area:'Administración'},
+    {date:'Dic. 2009',name:'Árbitro Especializado en Contrataciones con el Estado',org:'PROJUSTICIA',area:'Contrataciones'},
+    {date:'Nov. 2009',name:'Competencias y Capacidades para Implementar la Política, Planes y Programas de Cooperación Técnica',org:'Universidad Nacional de Tumbes – APCI',area:'Presupuesto'},
+    {date:'Jun. 2008',name:'Preparación y Evaluación Social de Proyectos de Inversión Pública',org:'Sistema Nacional de Inversión Pública',area:'Presupuesto'},
+    {date:'May. 2008',name:'Certificación y Recertificación del Contador Público Colegiado en el Desarrollo Nacional',org:'Colegio de Contadores Públicos de Tumbes',area:'Contabilidad'},
+    {date:'Feb. 2008',name:'Fortalecimiento de Capacidades para Alcaldes, Funcionarios y Equipo Técnico de Gobiernos Locales',org:'FONCODES – MIMDES',area:'Administración'},
+    {date:'Dic. 2007',name:'Control Gubernamental y Auditoría Financiera',org:'Colegio de Contadores Públicos de Tumbes',area:'Auditoría'},
+    {date:'Nov. 2007',name:'Fortalecimiento de Capacidades a los Agentes del Componente de Capacitación en Proyectos',org:'FONCODES – MIMDES',area:'Presupuesto'},
+    {date:'Nov. 2007',name:'Cierre Contable del Ejercicio 2007 para el Gobierno Nacional y Gobiernos Regionales',org:'Ministerio de Economía y Finanzas',area:'Contabilidad'},
+    {date:'Nov. 2007',name:'Presupuesto Participativo: Hacia una Participación Ciudadana, Inclusiva y Descentralizada',org:'FONCODES',area:'Presupuesto'},
+    {date:'Nov. 2007',name:'Planillas Electrónicas',org:'Colegio de Contadores Públicos de Tumbes',area:'Contabilidad'},
+    {date:'Jun. 2007',name:'Fortalecimiento de Capacidades a Agentes de Proyectos de Infraestructura Social y Productiva',org:'FONCODES',area:'Presupuesto'},
+    {date:'Jun. 2007',name:'Fortalecimiento de Capacidades a Agentes de Proyectos de Infraestructura — Presupuesto',org:'FONCODES',area:'Presupuesto'},
+    {date:'Dic. 2006',name:'Transferencia Metodológica de Herramientas de Desarrollo Económico Local (DEL)',org:'FONCODES – IDER CV',area:'Presupuesto'},
+    {date:'Ago. 2006',name:'Estrategias de Enseñanza y Aprendizaje — Educación',org:'Derrama Magisterial',area:'Educación'},
+    {date:'Jul. 2006',name:'Técnicas de Facilitación y Moderación',org:'Instituto de Desarrollo Regional "César Vallejo"',area:'Gestión'},
+    {date:'Ago. 2005',name:'Post Grado: Innovaciones Pedagógicas, Planeamiento Estratégico, Metodología de la Investigación',org:'Universidad César Vallejo',area:'Educación'},
+    {date:'May. 2005',name:'Constitución de Empresas, Legislación Laboral, Comercio Exterior, Exportación e Importación',org:'Colegio de Contadores Públicos de Tumbes',area:'Legal'},
+    {date:'2004',name:'Curso de Estrategias de Éxito Personal y Empresarial',org:'Colegio de Contadores Públicos de Tumbes',area:'Gestión'},
+    {date:'2004',name:'Seminario Taller de Capacitación: Peritaje Contable Judicial',org:'Colegio de Contadores Públicos de Tumbes',area:'Contabilidad'},
+    {date:'2002',name:'Seminario de Actualización Tributaria',org:'Colegio de Contadores Públicos de Tumbes',area:'Tributación'},
+    {date:'2001',name:'Administración de Sistemas de Crédito',org:'IPAE',area:'Finanzas'},
+    {date:'1999',name:'Seminario Taller de Sistemas Administrativos de Contabilidad',org:'Colegio de Contadores Públicos de Tumbes',area:'Contabilidad'}
+  ],
+  recognitions: [
+    {date:'Jul. 2005',title:'Participación en Elección de Consejeros al Consejo Nacional de la Magistratura',org:'Transparencia'},
+    {date:'Nov. 2004',title:'Reconocimiento como Observador Técnico — Consulta Popular de Revocatoria de Autoridades Municipales',org:'Transparencia'},
+    {date:'Nov. 2002',title:'Reconocimiento por participación activa — Elecciones Municipales y Regionales 2002 como Observador',org:'Transparencia'},
+    {date:'May. 2003',title:'Participación en el Foro Autoridades y Sociedad Civil — Fortalecimiento Democrático',org:'Asociación Civil Transparencia'},
+    {date:'Nov. 2001',title:'Reconocimiento por participación activa — Consulta Popular de Revocatoria de Autoridades 2001',org:'Transparencia'},
+    {date:'May. 2001',title:'Participación en Seminario Taller para Voluntarios sobre Conteo Rápido',org:'Transparencia'},
+    {date:'Mar. 2001',title:'Reconocimiento como Observador Técnico — Proceso Electoral 2001',org:'Transparencia'},
+    {date:'Ago. 2001',title:'Reconocimiento por labor durante el Fenómeno El Niño 1996–1997',org:'Instituto Nacional de Defensa Civil'},
+    {date:'Feb. 1996',title:'Reconocimiento por labor en beneficio de los pequeños agricultores de Casa Blanqueada',org:'Comité de Comercialización de Plátano — Sector Casa Blanqueada'},
+    {date:'Jul. 2004',title:'Ponente — Conferencias "Nuevas Tendencias Tecnológicas"',org:'Instituto Superior Tecnológico "24 de Julio"'},
+    {date:'Jun. 1995',title:'Expositor sobre Alternativas y Problemática del Agro',org:'Liga Agraria Departamental de Tumbes FRADEPT-CNA'},
+    {date:'Abr. 2002',title:'Participante en Seminario Taller sobre CIFRA Repartidora para Personeros y Voluntarios',org:'Transparencia'}
+  ],
+  references: [
+    {name:'C.P.C. Oscar Vilela Rodríguez',role:'Ex Decano del Colegio de Contadores Públicos de Tumbes. Referencia académica y profesional en el ámbito contable regional.'},
+    {name:'Prof. Fredy Rosales Reto',role:'Ex Alcalde de la Municipalidad Distrital de Pampas de Hospital (2007–2014). Referencia de gestión municipal.'},
+    {name:'Cont. Georgio Apolo Infante',role:'Ex Alcalde de la Municipalidad Distrital de Pampas de Hospital (2015–2018). Referencia de gestión pública.'}
+  ]
+};
 
-let educations = [
-  {degree:'Doctorado en Gestión Pública y Gobernabilidad',institution:'Universidad César Vallejo',year:'Estudios concluidos',detail:'Investigación en políticas públicas, gobernabilidad democrática y gestión territorial. Formación en metodología de la investigación científica.',icon:'DR'},
-  {degree:'Maestría en Gestión Educativa',institution:'Universidad César Vallejo',year:'Estudios concluidos',detail:'Especialización en innovaciones pedagógicas, planeamiento estratégico educativo y metodología de la investigación.',icon:'MG'},
-  {degree:'Contador Público Colegiado',institution:'Universidad Nacional de Tumbes — Facultad de Ciencias Económicas',year:'Colegiatura N.° 15-406',detail:'Tesis: "Estandarización de las estructuras de las bases de datos de los sistemas contables computarizados de empresas comerciales". Calificación: Muy Buena.',icon:'CPC'},
-  {degree:'Bachiller en Ciencias Económicas',institution:'Universidad Nacional de Tumbes',year:'Mención en Contabilidad',detail:'Materias: Contabilidad, Finanzas, Computación, Estadística, Economía, Administración de Empresas, Tributación, Auditoría, Gestión Pública.',icon:'BC'},
-  {degree:'Educación Secundaria',institution:'Centro Educativo Inmaculada Concepción',year:'',detail:'',icon:'SEC'},
-  {degree:'Educación Primaria',institution:'Escuela Primaria "Tarcila de Jesús Granda Mora"',year:'',detail:'',icon:'PRI'}
-];
+// Carga inicial de datos
+let cvData = localStorage.getItem('cv_editor_data') 
+  ? JSON.parse(localStorage.getItem('cv_editor_data')) 
+  : JSON.parse(JSON.stringify(DEFAULT_DATA));
 
-const courses = [
-  {date:'2018',name:'Liquidación Física y Financiera de Proyectos de Inversión Pública',org:'E&G Asesores y Consultores EIRL',area:'Contabilidad'},
-  {date:'Nov. 2017',name:'Pronunciamiento y Normas para la Presentación de la Información Contable — Cierre 2017',org:'Ministerio de Economía y Finanzas',area:'Contabilidad'},
-  {date:'Mar. 2016',name:'Elaboración del Informe Multianual de Gestión Fiscal 2017-2019',org:'Ministerio de Economía',area:'Presupuesto'},
-  {date:'Jul. 2012',name:'Sistemas Administrativos en la Gestión Pública — Ámbito Piura-Tumbes',org:'Universidad Nacional de Piura',area:'Administración'},
-  {date:'Jul. 2011',name:'III Curso SIAF — Sistema Integrado de Administración Financiera: Herramienta de Gestión',org:'Colegio de Contadores Públicos de Tumbes',area:'Contabilidad'},
-  {date:'Abr. 2011',name:'Aplicación de la Normatividad Contable, Operatividad en la Tabla de Operaciones',org:'Ministerio de Economía',area:'Contabilidad'},
-  {date:'Dic. 2010',name:'Seminario de Especialización Técnica Legal para Afrontar con Éxito un Arbitraje',org:'PROJUSTICIA',area:'Contrataciones'},
-  {date:'Nov. 2010',name:'V Seminario Interinstitucional de los Sistemas Administrativos',org:'Gobierno Regional de Piura',area:'Administración'},
-  {date:'Sep. 2010',name:'Instrumentos para la Planificación y Gestión de la Inversión Pública',org:'Colegio de Ingenieros del Perú',area:'Presupuesto'},
-  {date:'Feb. 2010',name:'IV Seminario Interinstitucional de los Sistemas Administrativos: Ámbito Piura-Tumbes',org:'Gobierno Regional de Piura',area:'Administración'},
-  {date:'Dic. 2009',name:'Árbitro Especializado en Contrataciones con el Estado',org:'PROJUSTICIA',area:'Contrataciones'},
-  {date:'Nov. 2009',name:'Competencias y Capacidades para Implementar la Política, Planes y Programas de Cooperación Técnica',org:'Universidad Nacional de Tumbes – APCI',area:'Presupuesto'},
-  {date:'Jun. 2008',name:'Preparación y Evaluación Social de Proyectos de Inversión Pública',org:'Sistema Nacional de Inversión Pública',area:'Presupuesto'},
-  {date:'May. 2008',name:'Certificación y Recertificación del Contador Público Colegiado en el Desarrollo Nacional',org:'Colegio de Contadores Públicos de Tumbes',area:'Contabilidad'},
-  {date:'Feb. 2008',name:'Fortalecimiento de Capacidades para Alcaldes, Funcionarios y Equipo Técnico de Gobiernos Locales',org:'FONCODES – MIMDES',area:'Administración'},
-  {date:'Dic. 2007',name:'Control Gubernamental y Auditoría Financiera',org:'Colegio de Contadores Públicos de Tumbes',area:'Auditoría'},
-  {date:'Nov. 2007',name:'Fortalecimiento de Capacidades a los Agentes del Componente de Capacitación en Proyectos',org:'FONCODES – MIMDES',area:'Presupuesto'},
-  {date:'Nov. 2007',name:'Cierre Contable del Ejercicio 2007 para el Gobierno Nacional y Gobiernos Regionales',org:'Ministerio de Economía y Finanzas',area:'Contabilidad'},
-  {date:'Nov. 2007',name:'Presupuesto Participativo: Hacia una Participación Ciudadana, Inclusiva y Descentralizada',org:'FONCODES',area:'Presupuesto'},
-  {date:'Nov. 2007',name:'Planillas Electrónicas',org:'Colegio de Contadores Públicos de Tumbes',area:'Contabilidad'},
-  {date:'Jun. 2007',name:'Fortalecimiento de Capacidades a Agentes de Proyectos de Infraestructura Social y Productiva',org:'FONCODES',area:'Presupuesto'},
-  {date:'Jun. 2007',name:'Fortalecimiento de Capacidades a Agentes de Proyectos de Infraestructura — Presupuesto',org:'FONCODES',area:'Presupuesto'},
-  {date:'Dic. 2006',name:'Transferencia Metodológica de Herramientas de Desarrollo Económico Local (DEL)',org:'FONCODES – IDER CV',area:'Presupuesto'},
-  {date:'Ago. 2006',name:'Estrategias de Enseñanza y Aprendizaje — Educación',org:'Derrama Magisterial',area:'Educación'},
-  {date:'Jul. 2006',name:'Técnicas de Facilitación y Moderación',org:'Instituto de Desarrollo Regional "César Vallejo"',area:'Gestión'},
-  {date:'Ago. 2005',name:'Post Grado: Innovaciones Pedagógicas, Planeamiento Estratégico, Metodología de la Investigación',org:'Universidad César Vallejo',area:'Educación'},
-  {date:'May. 2005',name:'Constitución de Empresas, Legislación Laboral, Comercio Exterior, Exportación e Importación',org:'Colegio de Contadores Públicos de Tumbes',area:'Legal'},
-  {date:'2004',name:'Curso de Estrategias de Éxito Personal y Empresarial',org:'Colegio de Contadores Públicos de Tumbes',area:'Gestión'},
-  {date:'2004',name:'Seminario Taller de Capacitación: Peritaje Contable Judicial',org:'Colegio de Contadores Públicos de Tumbes',area:'Contabilidad'},
-  {date:'2002',name:'Seminario de Actualización Tributaria',org:'Colegio de Contadores Públicos de Tumbes',area:'Tributación'},
-  {date:'2001',name:'Administración de Sistemas de Crédito',org:'IPAE',area:'Finanzas'},
-  {date:'1999',name:'Seminario Taller de Sistemas Administrativos de Contabilidad',org:'Colegio de Contadores Públicos de Tumbes',area:'Contabilidad'}
-];
+let experiences = cvData.experiences;
+let educations = cvData.educations;
+let courses = cvData.courses;
+let recognitions = cvData.recognitions;
+let references = cvData.references;
 
-const recognitions = [
-  {date:'Jul. 2005',title:'Participación en Elección de Consejeros al Consejo Nacional de la Magistratura',org:'Transparencia'},
-  {date:'Nov. 2004',title:'Reconocimiento como Observador Técnico — Consulta Popular de Revocatoria de Autoridades Municipales',org:'Transparencia'},
-  {date:'Nov. 2002',title:'Reconocimiento por participación activa — Elecciones Municipales y Regionales 2002 como Observador',org:'Transparencia'},
-  {date:'May. 2003',title:'Participación en el Foro Autoridades y Sociedad Civil — Fortalecimiento Democrático',org:'Asociación Civil Transparencia'},
-  {date:'Nov. 2001',title:'Reconocimiento por participación activa — Consulta Popular de Revocatoria de Autoridades 2001',org:'Transparencia'},
-  {date:'May. 2001',title:'Participación en Seminario Taller para Voluntarios sobre Conteo Rápido',org:'Transparencia'},
-  {date:'Mar. 2001',title:'Reconocimiento como Observador Técnico — Proceso Electoral 2001',org:'Transparencia'},
-  {date:'Ago. 2001',title:'Reconocimiento por labor durante el Fenómeno El Niño 1996–1997',org:'Instituto Nacional de Defensa Civil'},
-  {date:'Feb. 1996',title:'Reconocimiento por labor en beneficio de los pequeños agricultores de Casa Blanqueada',org:'Comité de Comercialización de Plátano — Sector Casa Blanqueada'},
-  {date:'Jul. 2004',title:'Ponente — Conferencias "Nuevas Tendencias Tecnológicas"',org:'Instituto Superior Tecnológico "24 de Julio"'},
-  {date:'Jun. 1995',title:'Expositor sobre Alternativas y Problemática del Agro',org:'Liga Agraria Departamental de Tumbes FRADEPT-CNA'},
-  {date:'Abr. 2002',title:'Participante en Seminario Taller sobre CIFRA Repartidora para Personeros y Voluntarios',org:'Transparencia'}
-];
+let editingExpIndex = -1;
+let editingEduIndex = -1;
+let editingCourseIndex = -1;
+let editingRecogIndex = -1;
+let editingRefIndex = -1;
 
-const references = [
-  {name:'C.P.C. Oscar Vilela Rodríguez',role:'Ex Decano del Colegio de Contadores Públicos de Tumbes. Referencia académica y profesional en el ámbito contable regional.'},
-  {name:'Prof. Fredy Rosales Reto',role:'Ex Alcalde de la Municipalidad Distrital de Pampas de Hospital (2007–2014). Referencia de gestión municipal.'},
-  {name:'Cont. Georgio Apolo Infante',role:'Ex Alcalde de la Municipalidad Distrital de Pampas de Hospital (2015–2018). Referencia de gestión pública.'}
-];
+function initValues() {
+  const fields = [
+    'nombre', 'titulo', 'perfil', 'dir', 'tel', 'email', 'nac', 'nac2',
+    'cole', 'osce', 'dni', 'ec', 'web', 'sk1', 'sk2', 'sk3', 'sk4',
+    'lang1', 'lang1p', 'lang2', 'lang2p', 'lang3', 'lang3p'
+  ];
+  fields.forEach(f => {
+    const el = document.getElementById('f-' + f);
+    if (el) el.value = cvData[f] !== undefined ? cvData[f] : '';
+  });
+}
+
+function saveToLocalStorage() {
+  cvData = {
+    nombre: v('f-nombre'),
+    titulo: v('f-titulo'),
+    perfil: v('f-perfil'),
+    dir: v('f-dir'),
+    tel: v('f-tel'),
+    email: v('f-email'),
+    nac: v('f-nac'),
+    nac2: v('f-nac2'),
+    cole: v('f-cole'),
+    osce: v('f-osce'),
+    dni: v('f-dni'),
+    ec: v('f-ec'),
+    web: v('f-web'),
+    sk1: v('f-sk1'),
+    sk2: v('f-sk2'),
+    sk3: v('f-sk3'),
+    sk4: v('f-sk4'),
+    lang1: v('f-lang1'),
+    lang1p: parseInt(v('f-lang1p')) || 0,
+    lang2: v('f-lang2'),
+    lang2p: parseInt(v('f-lang2p')) || 0,
+    lang3: v('f-lang3'),
+    lang3p: parseInt(v('f-lang3p')) || 0,
+    experiences: experiences,
+    educations: educations,
+    courses: courses,
+    recognitions: recognitions,
+    references: references
+  };
+  localStorage.setItem('cv_editor_data', JSON.stringify(cvData));
+}
+
+function resetFactoryData() {
+  if (confirm('¿Está seguro de que desea restaurar todos los datos por defecto? Esto borrará sus cambios actuales.')) {
+    localStorage.removeItem('cv_editor_data');
+    location.reload();
+  }
+}
 
 // ════════════════════════════════
 //  PANEL LOGIC
@@ -1481,6 +1660,66 @@ function toggleAddForm(type) {
   fw.classList.toggle('visible');
 }
 
+function cancelAdd(type) {
+  if (type === 'exp') {
+    editingExpIndex = -1;
+    document.getElementById('new-exp-role').value='';
+    document.getElementById('new-exp-org').value='';
+    document.getElementById('new-exp-period').value='';
+    document.getElementById('new-exp-desc').value='';
+    document.getElementById('new-exp-tags').value='';
+    const btn = document.querySelector('#exp-add-form .btn-confirm');
+    if (btn) btn.textContent = '✓ Agregar';
+  } else if (type === 'edu') {
+    editingEduIndex = -1;
+    document.getElementById('new-edu-degree').value='';
+    document.getElementById('new-edu-inst').value='';
+    document.getElementById('new-edu-year').value='';
+    document.getElementById('new-edu-detail').value='';
+    document.getElementById('new-edu-icon').value='';
+    const btn = document.querySelector('#edu-add-form .btn-confirm');
+    if (btn) btn.textContent = '✓ Agregar';
+  } else if (type === 'course') {
+    editingCourseIndex = -1;
+    document.getElementById('new-course-name').value='';
+    document.getElementById('new-course-org').value='';
+    document.getElementById('new-course-date').value='';
+    document.getElementById('new-course-area').value='';
+    const btn = document.querySelector('#course-add-form .btn-confirm');
+    if (btn) btn.textContent = '✓ Agregar';
+  } else if (type === 'recog') {
+    editingRecogIndex = -1;
+    document.getElementById('new-recog-title').value='';
+    document.getElementById('new-recog-org').value='';
+    document.getElementById('new-recog-date').value='';
+    const btn = document.querySelector('#recog-add-form .btn-confirm');
+    if (btn) btn.textContent = '✓ Agregar';
+  } else if (type === 'ref') {
+    editingRefIndex = -1;
+    document.getElementById('new-ref-name').value='';
+    document.getElementById('new-ref-role').value='';
+    const btn = document.querySelector('#ref-add-form .btn-confirm');
+    if (btn) btn.textContent = '✓ Agregar';
+  }
+  toggleAddForm(type);
+}
+
+function editExp(i) {
+  const e = experiences[i];
+  document.getElementById('new-exp-role').value = e.role || '';
+  document.getElementById('new-exp-org').value = e.org || '';
+  document.getElementById('new-exp-period').value = e.period || '';
+  document.getElementById('new-exp-desc').value = e.desc || '';
+  document.getElementById('new-exp-tags').value = (e.tags || []).join(', ');
+  
+  editingExpIndex = i;
+  const btn = document.querySelector('#exp-add-form .btn-confirm');
+  if (btn) btn.textContent = '✓ Guardar Cambios';
+  
+  const fw = document.getElementById('exp-add-form');
+  if (fw) fw.classList.add('visible');
+}
+
 function addExp() {
   const role   = document.getElementById('new-exp-role').value.trim();
   const org    = document.getElementById('new-exp-org').value.trim();
@@ -1488,7 +1727,16 @@ function addExp() {
   const desc   = document.getElementById('new-exp-desc').value.trim();
   const tags   = document.getElementById('new-exp-tags').value.split(',').map(t=>t.trim()).filter(Boolean);
   if (!role) return;
-  experiences.unshift({role,org,period,desc,tags});
+  
+  if (editingExpIndex > -1) {
+    experiences[editingExpIndex] = {role, org, period, desc, tags};
+    editingExpIndex = -1;
+    const btn = document.querySelector('#exp-add-form .btn-confirm');
+    if (btn) btn.textContent = '✓ Agregar';
+  } else {
+    experiences.unshift({role,org,period,desc,tags});
+  }
+  
   document.getElementById('new-exp-role').value='';
   document.getElementById('new-exp-org').value='';
   document.getElementById('new-exp-period').value='';
@@ -1500,7 +1748,30 @@ function addExp() {
 
 function deleteExp(i) {
   experiences.splice(i,1);
+  if (editingExpIndex === i) {
+    editingExpIndex = -1;
+    const btn = document.querySelector('#exp-add-form .btn-confirm');
+    if (btn) btn.textContent = '✓ Agregar';
+  } else if (editingExpIndex > i) {
+    editingExpIndex--;
+  }
   render();
+}
+
+function editEdu(i) {
+  const e = educations[i];
+  document.getElementById('new-edu-degree').value = e.degree || '';
+  document.getElementById('new-edu-inst').value = e.institution || '';
+  document.getElementById('new-edu-year').value = e.year || '';
+  document.getElementById('new-edu-detail').value = e.detail || '';
+  document.getElementById('new-edu-icon').value = e.icon || '';
+  
+  editingEduIndex = i;
+  const btn = document.querySelector('#edu-add-form .btn-confirm');
+  if (btn) btn.textContent = '✓ Guardar Cambios';
+  
+  const fw = document.getElementById('edu-add-form');
+  if (fw) fw.classList.add('visible');
 }
 
 function addEdu() {
@@ -1510,7 +1781,16 @@ function addEdu() {
   const detail  = document.getElementById('new-edu-detail').value.trim();
   const icon    = document.getElementById('new-edu-icon').value.trim().toUpperCase()||'EDU';
   if (!degree) return;
-  educations.unshift({degree,institution:inst,year,detail,icon});
+  
+  if (editingEduIndex > -1) {
+    educations[editingEduIndex] = {degree, institution:inst, year, detail, icon};
+    editingEduIndex = -1;
+    const btn = document.querySelector('#edu-add-form .btn-confirm');
+    if (btn) btn.textContent = '✓ Agregar';
+  } else {
+    educations.unshift({degree,institution:inst,year,detail,icon});
+  }
+  
   document.getElementById('new-edu-degree').value='';
   document.getElementById('new-edu-inst').value='';
   document.getElementById('new-edu-year').value='';
@@ -1522,6 +1802,157 @@ function addEdu() {
 
 function deleteEdu(i) {
   educations.splice(i,1);
+  if (editingEduIndex === i) {
+    editingEduIndex = -1;
+    const btn = document.querySelector('#edu-add-form .btn-confirm');
+    if (btn) btn.textContent = '✓ Agregar';
+  } else if (editingEduIndex > i) {
+    editingEduIndex--;
+  }
+  render();
+}
+
+function editCourse(i) {
+  const c = courses[i];
+  document.getElementById('new-course-name').value = c.name || '';
+  document.getElementById('new-course-org').value = c.org || '';
+  document.getElementById('new-course-date').value = c.date || '';
+  document.getElementById('new-course-area').value = c.area || '';
+  
+  editingCourseIndex = i;
+  const btn = document.querySelector('#course-add-form .btn-confirm');
+  if (btn) btn.textContent = '✓ Guardar Cambios';
+  
+  const fw = document.getElementById('course-add-form');
+  if (fw) fw.classList.add('visible');
+}
+
+function addCourse() {
+  const name = document.getElementById('new-course-name').value.trim();
+  const org  = document.getElementById('new-course-org').value.trim();
+  const date = document.getElementById('new-course-date').value.trim();
+  const area = document.getElementById('new-course-area').value.trim();
+  if (!name) return;
+  
+  if (editingCourseIndex > -1) {
+    courses[editingCourseIndex] = {name, org, date, area};
+    editingCourseIndex = -1;
+    const btn = document.querySelector('#course-add-form .btn-confirm');
+    if (btn) btn.textContent = '✓ Agregar';
+  } else {
+    courses.unshift({name, org, date, area});
+  }
+  
+  document.getElementById('new-course-name').value = '';
+  document.getElementById('new-course-org').value = '';
+  document.getElementById('new-course-date').value = '';
+  document.getElementById('new-course-area').value = '';
+  toggleAddForm('course');
+  render();
+}
+
+function deleteCourse(i) {
+  courses.splice(i,1);
+  if (editingCourseIndex === i) {
+    editingCourseIndex = -1;
+    const btn = document.querySelector('#course-add-form .btn-confirm');
+    if (btn) btn.textContent = '✓ Agregar';
+  } else if (editingCourseIndex > i) {
+    editingCourseIndex--;
+  }
+  render();
+}
+
+function editRecog(i) {
+  const r = recognitions[i];
+  document.getElementById('new-recog-title').value = r.title || '';
+  document.getElementById('new-recog-org').value = r.org || '';
+  document.getElementById('new-recog-date').value = r.date || '';
+  
+  editingRecogIndex = i;
+  const btn = document.querySelector('#recog-add-form .btn-confirm');
+  if (btn) btn.textContent = '✓ Guardar Cambios';
+  
+  const fw = document.getElementById('recog-add-form');
+  if (fw) fw.classList.add('visible');
+}
+
+function addRecog() {
+  const title = document.getElementById('new-recog-title').value.trim();
+  const org   = document.getElementById('new-recog-org').value.trim();
+  const date  = document.getElementById('new-recog-date').value.trim();
+  if (!title) return;
+  
+  if (editingRecogIndex > -1) {
+    recognitions[editingRecogIndex] = {title, org, date};
+    editingRecogIndex = -1;
+    const btn = document.querySelector('#recog-add-form .btn-confirm');
+    if (btn) btn.textContent = '✓ Agregar';
+  } else {
+    recognitions.unshift({title, org, date});
+  }
+  
+  document.getElementById('new-recog-title').value = '';
+  document.getElementById('new-recog-org').value = '';
+  document.getElementById('new-recog-date').value = '';
+  toggleAddForm('recog');
+  render();
+}
+
+function deleteRecog(i) {
+  recognitions.splice(i,1);
+  if (editingRecogIndex === i) {
+    editingRecogIndex = -1;
+    const btn = document.querySelector('#recog-add-form .btn-confirm');
+    if (btn) btn.textContent = '✓ Agregar';
+  } else if (editingRecogIndex > i) {
+    editingRecogIndex--;
+  }
+  render();
+}
+
+function editRef(i) {
+  const r = references[i];
+  document.getElementById('new-ref-name').value = r.name || '';
+  document.getElementById('new-ref-role').value = r.role || '';
+  
+  editingRefIndex = i;
+  const btn = document.querySelector('#ref-add-form .btn-confirm');
+  if (btn) btn.textContent = '✓ Guardar Cambios';
+  
+  const fw = document.getElementById('ref-add-form');
+  if (fw) fw.classList.add('visible');
+}
+
+function addRef() {
+  const name = document.getElementById('new-ref-name').value.trim();
+  const role = document.getElementById('new-ref-role').value.trim();
+  if (!name) return;
+  
+  if (editingRefIndex > -1) {
+    references[editingRefIndex] = {name, role};
+    editingRefIndex = -1;
+    const btn = document.querySelector('#ref-add-form .btn-confirm');
+    if (btn) btn.textContent = '✓ Agregar';
+  } else {
+    references.unshift({name, role});
+  }
+  
+  document.getElementById('new-ref-name').value = '';
+  document.getElementById('new-ref-role').value = '';
+  toggleAddForm('ref');
+  render();
+}
+
+function deleteRef(i) {
+  references.splice(i,1);
+  if (editingRefIndex === i) {
+    editingRefIndex = -1;
+    const btn = document.querySelector('#ref-add-form .btn-confirm');
+    if (btn) btn.textContent = '✓ Agregar';
+  } else if (editingRefIndex > i) {
+    editingRefIndex--;
+  }
   render();
 }
 
@@ -1677,6 +2108,9 @@ function t(id,val){ const el=document.getElementById(id); if(el) el.textContent=
 function h(id,val){ const el=document.getElementById(id); if(el) el.innerHTML=val; }
 
 function render() {
+  // Guardar en LocalStorage cada vez que cambien datos
+  saveToLocalStorage();
+
   // Personal
   t('cv-nombre', v('f-nombre'));
   t('cv-titulo',  v('f-titulo'));
@@ -1734,10 +2168,61 @@ function render() {
   // ── EDUCATION in CV ──
   h('cv-edu', educations.map(eduHTML).join(''));
 
+  // ── COURSE list in panel ──
+  let courseListHTML='';
+  courses.forEach((c,i)=>{
+    courseListHTML+=`<div class="item-card">
+      <button class="item-delete" onclick="deleteCourse(${i})">✕</button>
+      <div class="item-card-title">${c.name}</div>
+      <div class="item-card-sub">${c.org} · ${c.date}</div>
+    </div>`;
+  });
+  h('course-list', courseListHTML);
+
   // ── COURSES (split across p5/p6) ──
   const half2 = Math.ceil(courses.length/2);
   h('cv-courses-p5', courses.slice(0,half2).map(courseHTML).join(''));
   h('cv-courses-p6', courses.slice(half2).map(courseHTML).join(''));
+
+  // ── RECOGNITION list in panel ──
+  let recogListHTML='';
+  recognitions.forEach((r,i)=>{
+    recogListHTML+=`<div class="item-card">
+      <button class="item-delete" onclick="deleteRecog(${i})">✕</button>
+      <div class="item-card-title">${r.title}</div>
+      <div class="item-card-sub">${r.org} · ${r.date}</div>
+    </div>`;
+  });
+  h('recog-list', recogListHTML);
+
+  // ── RECOGNITIONS ──
+  h('cv-recog', recognitions.map(r=>`
+    <div class="recog-item">
+      <div class="recog-date">${r.date}</div>
+      <div class="recog-title">${r.title}</div>
+      <div class="recog-org">${r.org}</div>
+    </div>`).join(''));
+
+  // ── REFERENCE list in panel ──
+  let refListHTML='';
+  references.forEach((r,i)=>{
+    refListHTML+=`<div class="item-card">
+      <button class="item-delete" onclick="deleteRef(${i})">✕</button>
+      <div class="item-card-title">${r.name}</div>
+      <div class="item-card-sub">${r.role}</div>
+    </div>`;
+  });
+  h('ref-list', refListHTML);
+
+  // ── REFERENCES ──
+  h('cv-refs',`
+    <div class="ref-grid" style="margin-bottom:40px;">
+      ${references.map(r=>`<div class="ref-card"><div class="ref-name">${r.name}</div><div class="ref-role">${r.role}</div></div>`).join('')}
+    </div>
+    <div style="margin-top:40px;padding:24px;background:var(--cream);border-top:2px solid var(--gold);">
+      <div class="section-eyebrow" style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);margin-bottom:10px;">Nota</div>
+      <p style="font-size:13px;color:var(--muted);line-height:1.7;">Se adjuntan fotocopias de certificados y diplomas que acreditan la formación académica, experiencia profesional y participación en cursos, seminarios y actividades de cooperación técnica mencionados en el presente Curriculum Vitae.</p>
+    </div>`);
 
   // ── SKILLS ──
   const sk = [
@@ -1765,14 +2250,6 @@ function render() {
       <div class="lang-level">${l.label}</div>
     </div>`).join(''));
 
-  // ── RECOGNITIONS ──
-  h('cv-recog', recognitions.map(r=>`
-    <div class="recog-item">
-      <div class="recog-date">${r.date}</div>
-      <div class="recog-title">${r.title}</div>
-      <div class="recog-org">${r.org}</div>
-    </div>`).join(''));
-
   // ── OTHER CAPABILITIES ──
   h('cv-other',`
     <div class="cert-grid" style="margin-bottom:32px;">
@@ -1794,15 +2271,17 @@ function render() {
       </div>
     </div>`);
 
-  // ── REFERENCES ──
-  h('cv-refs',`
-    <div class="ref-grid" style="margin-bottom:40px;">
-      ${references.map(r=>`<div class="ref-card"><div class="ref-name">${r.name}</div><div class="ref-role">${r.role}</div></div>`).join('')}
-    </div>
-    <div style="margin-top:40px;padding:24px;background:var(--cream);border-top:2px solid var(--gold);">
-      <div class="section-eyebrow" style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);margin-bottom:10px;">Nota</div>
-      <p style="font-size:13px;color:var(--muted);line-height:1.7;">Se adjuntan fotocopias de certificados y diplomas que acreditan la formación académica, experiencia profesional y participación en cursos, seminarios y actividades de cooperación técnica mencionados en el presente Curriculum Vitae.</p>
-    </div>`);
+  // Numeración dinámica de páginas
+  const pages = document.querySelectorAll('.cv-page');
+  const totalPages = pages.length;
+  pages.forEach((page, idx) => {
+    const numEl = page.querySelector('.page-num');
+    if (numEl) {
+      const pageNumStr = String(idx + 1).padStart(2, '0');
+      const totalPagesStr = String(totalPages).padStart(2, '0');
+      numEl.textContent = `${pageNumStr} / ${totalPagesStr}`;
+    }
+  });
 }
 
 function pctLabel(p){
@@ -1882,6 +2361,7 @@ window.addEventListener('resize', () => {
 });
 
 // INIT
+initValues();
 render();
 </script>
 </body>
